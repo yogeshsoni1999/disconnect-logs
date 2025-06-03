@@ -17,14 +17,16 @@ const getDisconnectCounts = asyncHandler(async (req, res) => {
             {
                 $group: {
                     _id: '$computer_name',
-                    disconnectCount: { $sum: 1 }
+                    disconnectCount: { $sum: 1 },
+                    average_limit: { $avg: '$average_limit' }
                 }
             },
             {
                 $project: {
                     _id: 0,
                     computer_name: '$_id',
-                    disconnectCount: 1
+                    disconnectCount: 1,
+                    average_limit:1
                 }
             },
             { $sort: { disconnectCount: -1 } }
