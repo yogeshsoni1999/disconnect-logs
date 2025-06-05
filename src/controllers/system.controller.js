@@ -1,47 +1,28 @@
 import { asyncHandler } from '../utils/asynchandler.js'
 import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
-import { DisconnectLog } from '../models/connectionLogsModal.js';
+// import { DisconnectLog } from '../models/connectionLogsModal.js';
 
+import { parseLogFiles } from '../utils/logParser.js';
 
-const getDisconnectCounts = asyncHandler(async (req, res) => {
+const getDisconnectLogs = asyncHandler(async (req, res) => {
     try {
-        let startDate = req.body.start_date || "";
-        let endDate = req.body.end_date || "";
+        let startDate = req.query.start_date || "";
+        let endDate = req.query.end_date || "";
 
-        let commonCondition = {}
-        if (startDate && endDate) commonCondition['disconnect_time'] = { $gte: new Date(startDate), $lte: new Date(endDate) }
-
-        let result = await DisconnectLog.aggregate([
-            { $match: commonCondition },
-            {
-                $group: {
-                    _id: '$computer_name',
-                    disconnectCount: { $sum: 1 },
-                    average_limit: { $avg: '$average_limit' }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    computer_name: '$_id',
-                    disconnectCount: 1,
-                    average_limit:1
-                }
-            },
-            { $sort: { disconnectCount: -1 } }
-        ]);
-
+        const data = await parseLogFiles(startDate, endDate);
+        console.log("data----", data);
         return res
             .status(200)
-            .json(new ApiResponse(200, result))
+            .json(new ApiResponse(200, data))
     } catch (error) {
-        console.error("error:", error);
-        throw new ApiError(400, "something went wrong")
+        console.error('Error reading logs:', error.message);
+        throw new ApiError(400, "Unable to process log files")
     }
-
 });
 
+
 export {
-    getDisconnectCounts
+    getDisconnectLogs,
+    // getDisconnectCounts
 }

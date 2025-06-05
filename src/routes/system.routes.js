@@ -1,8 +1,8 @@
 import { Router } from "express";
 const router = Router();
 
-import {getDisconnectCounts} from "../controllers/system.controller.js";
+import {getDisconnectLogs } from "../controllers/system.controller.js";
 
-router.route("/disconnect-details").get(getDisconnectCounts)
+router.route("/disconnect-logs").get(getDisconnectLogs)
 
 export default router
